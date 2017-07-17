@@ -255,34 +255,36 @@ function add_params(&$link_options) {
   // get first author
   $author_key = variable_get('islandora_catalog_search_url_author', '');
   $name_xml = $mods_xml->xpath('mods:name');
-  $name_xml = $name_xml[0];
-  $name_parts = array();
-  $name_xml->registerXPathNamespace('mods', 'http://www.loc.gov/mods/v3');
-  $roles = $name_xml->xpath('mods:role/mods:roleTerm');
-  $role = strtolower((string) reset($roles));
-  if ($role) {
-    if ($role == 'author') {
-      foreach ($name_xml->xpath('mods:namePart') as $name_part) {
-        if ((string) $name_part != '') {
-          // Strip periods off the end.
-          $np = (string) rtrim($name_part, '.');
-          if ($name_part['type'] == 'given') {
+  if ($name_xml != null) {
+    $name_xml = $name_xml[0];
+    $name_parts = array();
+    $name_xml->registerXPathNamespace('mods', 'http://www.loc.gov/mods/v3');
+    $roles = $name_xml->xpath('mods:role/mods:roleTerm');
+    $role = strtolower((string) reset($roles));
+    if ($role) {
+      if ($role == 'author') {
+        foreach ($name_xml->xpath('mods:namePart') as $name_part) {
+          if ((string) $name_part != '') {
+            // Strip periods off the end.
+            $np = (string) rtrim($name_part, '.');
+            if ($name_part['type'] == 'given') {
             $name_parts['first_name'] = (string) $name_part;
-          }
-          if ($name_part['type'] == 'family') {
-            $name_parts['last_name'] = $np;
-          }
-          if (!isset($name_part['type'])) {
-            $name_parts['no_type'] = $np;
+            }
+            if ($name_part['type'] == 'family') {
+              $name_parts['last_name'] = $np;
+            }
+            if (!isset($name_part['type'])) {
+              $name_parts['no_type'] = $np;
+            }
           }
         }
       }
-    }
-    if (isset($name_parts['last_name']) && isset($name_parts['first_name'])) {
-      $link_options['query'][$author_key] = $name_parts['first_name'] . ' ' . $name_parts['last_name'];
-    }
-    elseif (isset($name_parts['no_type'])) {
-      $link_options['query'][$author_key] = $name_parts['no_type'];
+      if (isset($name_parts['last_name']) && isset($name_parts['first_name'])) {
+        $link_options['query'][$author_key] = $name_parts['first_name'] . ' ' . $name_parts['last_name'];
+      }
+      elseif (isset($name_parts['no_type'])) {
+        $link_options['query'][$author_key] = $name_parts['no_type'];
+      }
     }
   }
 
